@@ -1,32 +1,43 @@
 // Add console.log to check to see if our code is working.
 console.log("working");
 
-// Create the dark view tile layer that will be an option for our map.
+// Create the streets view tile layer that will be an option for our map.
 let streets = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}', {
 attribution: 'Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery (c) <a href="https://www.mapbox.com/">Mapbox</a>',
 	maxZoom: 18,
 	accessToken: API_KEY
 });
 
-// Create the light view tile layer that will be an option for our map.
+// Create the satellitestreets view tile layer that will be an option for our map.
 let satelliteStreets = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/satellite-streets-v11/tiles/{z}/{x}/{y}?access_token={accessToken}', {
 attribution: 'Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery (c) <a href="https://www.mapbox.com/">Mapbox</a>',
 	maxZoom: 18,
 	accessToken: API_KEY
 });
-// Create a base layer that holds both maps.
+// Create the dark view tile layer that will be an option for our map.
+let dark = L.tileLayer('https://api.mapbox.com/styles/v1/mapbox/dark-v10/tiles/{z}/{x}/{y}?access_token={accessToken}', {
+attribution: 'Map data © <a href="https://www.openstreetmap.org/">OpenStreetMap</a> contributors, <a href="https://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery (c) <a href="https://www.mapbox.com/">Mapbox</a>',
+	maxZoom: 18,
+	accessToken: API_KEY
+});
+// Create a base layer that holds maps.
 let baseMaps = {
 	"Streets": streets,
-	"Satellite Streets": satelliteStreets
+    "Satellite Streets": satelliteStreets,
+    "Dark":dark
 };
 
 // Create the earthquake layer for our map.
 let earthquakes = new L.layerGroup();  
 
+// Create the tectonic plate for our map.
+let tectonicplate = new L.layerGroup();  
+
 // We define an object that contains the overlays.
 // This overlay will be visible all the time.
 let overlays = {
-	Earthquakes: earthquakes
+    Earthquakes: earthquakes,
+    Tectonicplate: tectonicplate
 };
 
 
@@ -136,4 +147,39 @@ d3.json("https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_week.geoj
         return div;
     };
     legend.addTo(map);
+});
+//  tectonic plate layer :
+d3.json("https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json").then(function(data) {
+	console.log(data);
+	
+	 //This function returns the style data for each of the tectonic we plot on
+	 
+	
+	function styleInfo(feature) {
+		return {
+		opacity: 1,
+		fillOpacity: 1,
+		color: "#ea2c2c",
+		weight: 1
+		};
+	};
+	
+	// Creating a GeoJSON layer with the retrieved data.
+	L.geoJson(data, {
+		// We turn each feature into a circleMarker on the map.
+		pointToLayer: function(feature, latlng) {
+			console.log(data);
+			return L.circleMarker(latlng);
+		},
+		// We set the style for each circleMarker using our styleInfo function.
+	style: styleInfo,
+		// We create a popup for each circleMarker to display the magnitude and
+		//  location of the tectonic after the marker has been created and styled.
+		onEachFeature: function(feature, layer) {
+		layer.bindPopup("Magnitude: " + feature.properties.mag + "<br>Location: " + feature.properties.place);
+	}
+	}).addTo(tectonicplate);
+
+	////Then we add the tectonic layer to our map.
+    tectonicplate.addTo(map);    
 });
