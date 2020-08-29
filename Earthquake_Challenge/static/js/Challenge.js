@@ -180,6 +180,6 @@ d3.json("https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/
 	}
 	}).addTo(tectonicplate);
 
-	////Then we add the tectonic layer to our map.
+	////Then we add the tectonic layer to our map:
     tectonicplate.addTo(map);    
 });
